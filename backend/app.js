@@ -1,10 +1,19 @@
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
+import authRoutes from "./src/routes/authroutes.js";
+import { errorHandler, notFound } from "./src/middleware/errormiddleware.js";
 
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(
+    cors({
+        origin: process.env.FRONTEND_URL || "http://localhost:5173",
+        credentials: true,
+    })
+);
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -15,5 +24,10 @@ app.get("/", (req, res) => {
         message: "Task Manager API Running",
     });
 });
+
+app.use("/api/auth", authRoutes);
+
+app.use(notFound);
+app.use(errorHandler);
 
 export default app;
