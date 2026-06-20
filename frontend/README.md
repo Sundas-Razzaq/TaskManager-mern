@@ -1,16 +1,30 @@
-# React + Vite
+# Frontend Auth App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This frontend is the React + Vite client for the reusable MERN authentication system.
 
-Currently, two official plugins are available:
+## Frontend Workflow
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+1. The user opens the login or register screen.
+2. The form submits to the backend through the centralized Axios instance.
+3. On success, the JWT token and user object are stored in `localStorage`.
+4. Protected pages use a route guard to verify the token exists.
+5. The dashboard fetches the current user from the backend using the stored token.
+6. Logout clears the session from the browser.
 
-## React Compiler
+## Main Client Pieces
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- `src/api/axiosInstance.js` adds the Bearer token automatically.
+- `src/api/authAPI.js` contains the auth request functions.
+- `src/routes/protectedRoute.jsx` guards authenticated pages.
+- `src/pages/login.jsx` handles login.
+- `src/pages/register.jsx` handles sign up.
+- `src/pages/forgotpass.jsx` starts password recovery.
+- `src/pages/passreset.jsx` completes password recovery.
+- `src/pages/dashboard.jsx` shows the authenticated user.
 
-## Expanding the ESLint configuration
+## Start The Client
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm install
+npm run dev
+```

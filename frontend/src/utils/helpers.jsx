@@ -14,7 +14,7 @@ export const getStoredUser = () => {
 
     try {
         return JSON.parse(rawUser);
-    } catch (_error) {
+    } catch {
         return null;
     }
 };

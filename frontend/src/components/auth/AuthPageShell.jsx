@@ -6,15 +6,15 @@ const AuthPageShell = ({ eyebrow, title, subtitle, children, footer }) => {
                 <div className="auth-hero__glow auth-hero__glow--two" />
                 <div className="auth-hero__content">
                     <p className="eyebrow">{eyebrow}</p>
-                    <h1>Task Manager Auth</h1>
+                    <h1>Task Manager---Clear Your Mind</h1>
                     <p>
-                        A reusable authentication flow with JWT login, password reset, protected routes,
-                        and a backend shape ready for future verification and admin roles.
+                        Stop trying to remember everything. Dump your to-do list into a reliable
+                        system designed to keep your projects organized and moving forward.
                     </p>
                     <ul>
-                        <li>JWT session handling</li>
-                        <li>Reset token workflow</li>
-                        <li>Frontend route protection</li>
+                        <li>Instant task sorting</li>
+                        <li>Visual progress updates</li>
+                        <li>Accessible on any device</li>
                     </ul>
                 </div>
             </section>

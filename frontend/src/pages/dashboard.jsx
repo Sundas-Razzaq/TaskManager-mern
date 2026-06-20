@@ -27,7 +27,7 @@ const DashboardPage = () => {
     const handleLogout = async () => {
         try {
             await logoutUser();
-        } catch (_error) {
+        } catch {
             // Stateless JWT logout is handled by clearing local storage on the client.
         } finally {
             clearAuthSession();
