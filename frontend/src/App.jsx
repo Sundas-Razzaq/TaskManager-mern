@@ -5,6 +5,7 @@ import ForgotPasswordPage from "./pages/forgotpass.jsx";
 import PasswordResetPage from "./pages/passreset.jsx";
 import DashboardPage from "./pages/dashboard.jsx";
 import TasksPage from "./pages/tasks.jsx";
+import ProfilePage from "./pages/profilePage.jsx";
 import ProtectedRoute from "./routes/protectedRoute.jsx";
 import { getStoredToken } from "./utils/helpers.jsx";
 
@@ -22,6 +23,7 @@ function App() {
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/tasks" element={<TasksPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Route>
 
       <Route path="*" element={<Navigate to={defaultRoute} replace />} />

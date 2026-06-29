@@ -6,7 +6,7 @@ const AuthPageShell = ({ eyebrow, title, subtitle, children, footer }) => {
                 <div className="auth-hero__glow auth-hero__glow--two" />
                 <div className="auth-hero__content">
                     <p className="eyebrow">{eyebrow}</p>
-                    <h1>Task Manager---Clear Your Mind</h1>
+                    <h1>Task Manager-Clear Your Mind</h1>
                     <p>
                         Stop trying to remember everything. Dump your to-do list into a reliable
                         system designed to keep your projects organized and moving forward.

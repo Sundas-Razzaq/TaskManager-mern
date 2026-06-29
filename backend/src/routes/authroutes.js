@@ -7,6 +7,8 @@ import {
     logoutUser,
     registerUser,
     resetPassword,
+    updateUserProfile,
+    changePassword,
 } from "../controllers/authcontroller.js";
 import authMiddleware from "../middleware/authmiddleware.js";
 
@@ -38,6 +40,10 @@ router.put(
     [body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters")],
     resetPassword
 );
+
+// Protected routes (require authentication)
 router.get("/me", authMiddleware, getCurrentUser);
+router.put("/me", authMiddleware, updateUserProfile);
+router.put("/change-password", authMiddleware, changePassword);
 
 export default router;
