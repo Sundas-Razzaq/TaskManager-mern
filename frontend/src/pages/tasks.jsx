@@ -1,3 +1,4 @@
+// pages/tasks.jsx
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -24,7 +25,8 @@ const TasksPage = () => {
     const [pagination, setPagination] = useState({ totalTasks: 0, totalPages: 1, page: 1, limit: 10 });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [page, setPage] = useState(1);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [editingTask, setEditingTask] = useState(null); // Track which task is being edited
     const [filters, setFilters] = useState({
         search: "",
         status: "",
@@ -55,7 +57,7 @@ const TasksPage = () => {
 
             setTasks(response.data.tasks || []);
             setPagination(response.data.pagination || { totalTasks: 0, totalPages: 1, page: 1, limit: 10 });
-            setPage(response.data.pagination?.page || pageNumber);
+            setCurrentPage(response.data.pagination?.page || pageNumber);
         } catch (error) {
             toast.error(resolveErrorMessage(error));
         } finally {
@@ -63,8 +65,8 @@ const TasksPage = () => {
         }
     };
 
+    // Fetch tasks when filters change
     useEffect(() => {
-        setPage(1);
         fetchTasks(1);
     }, [filters]);
 
@@ -98,7 +100,62 @@ const TasksPage = () => {
                 priority: "medium",
                 dueDate: "",
             });
-            await fetchTasks(page);
+            await fetchTasks(currentPage);
+        } catch (error) {
+            toast.error(resolveErrorMessage(error));
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    //editing a task 
+    const handleStartEdit = (task) => {
+        setEditingTask(task._id);
+        setFormData({
+            title: task.title || "",
+            description: task.description || "",
+            status: task.status || "todo",
+            priority: task.priority || "medium",
+            dueDate: task.dueDate ? new Date(task.dueDate).toISOString().slice(0, 16) : "",
+        });
+
+        // Scroll to the form
+        document.querySelector('.task-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    // Cancel editing
+    const handleCancelEdit = () => {
+        setEditingTask(null);
+        setFormData({
+            title: "",
+            description: "",
+            status: "todo",
+            priority: "medium",
+            dueDate: "",
+        });
+    };
+
+    // Update existing task
+    const handleUpdateTask = async (event) => {
+        event.preventDefault();
+
+        try {
+            setSaving(true);
+            await updateTask(editingTask, {
+                ...formData,
+                dueDate: formData.dueDate || undefined,
+            });
+
+            toast.success("Task updated successfully");
+            setEditingTask(null);
+            setFormData({
+                title: "",
+                description: "",
+                status: "todo",
+                priority: "medium",
+                dueDate: "",
+            });
+            await fetchTasks(currentPage);
         } catch (error) {
             toast.error(resolveErrorMessage(error));
         } finally {
@@ -111,7 +168,7 @@ const TasksPage = () => {
             const nextStatus = getNextStatus(task.status);
             await updateTask(task._id, { status: nextStatus });
             toast.success("Task updated successfully");
-            await fetchTasks(page);
+            await fetchTasks(currentPage);
         } catch (error) {
             toast.error(resolveErrorMessage(error));
         }
@@ -126,9 +183,15 @@ const TasksPage = () => {
         try {
             await deleteTask(taskId);
             toast.success("Task deleted successfully");
-            await fetchTasks(page);
+            await fetchTasks(currentPage);
         } catch (error) {
             toast.error(resolveErrorMessage(error));
+        }
+    };
+
+    const handlePageChange = (newPage) => {
+        if (newPage >= 1 && newPage <= pagination.totalPages) {
+            fetchTasks(newPage);
         }
     };
 
@@ -190,20 +253,42 @@ const TasksPage = () => {
                     <section className="task-panel">
                         <div className="dashboard-section__header">
                             <div>
-                                <p className="eyebrow">Create task</p>
-                                <h2>New task entry</h2>
+                                <p className="eyebrow">{editingTask ? "Edit task" : "Create task"}</p>
+                                <h2>{editingTask ? "Update task entry" : "New task entry"}</h2>
                             </div>
+                            {editingTask && (
+                                <button
+                                    type="button"
+                                    className="ghost-button"
+                                    onClick={handleCancelEdit}
+                                >
+                                    Cancel Editing
+                                </button>
+                            )}
                         </div>
 
-                        <form className="task-form" onSubmit={handleCreateTask}>
+                        <form className="task-form" onSubmit={editingTask ? handleUpdateTask : handleCreateTask}>
                             <label>
                                 Title
-                                <input type="text" name="title" value={formData.title} onChange={handleFormChange} placeholder="Ship dashboard widgets" required />
+                                <input
+                                    type="text"
+                                    name="title"
+                                    value={formData.title}
+                                    onChange={handleFormChange}
+                                    placeholder="Ship dashboard widgets"
+                                    required
+                                />
                             </label>
 
                             <label>
                                 Description
-                                <textarea name="description" value={formData.description} onChange={handleFormChange} placeholder="Optional notes for the task" rows="4" />
+                                <textarea
+                                    name="description"
+                                    value={formData.description}
+                                    onChange={handleFormChange}
+                                    placeholder="Optional notes for the task"
+                                    rows="4"
+                                />
                             </label>
 
                             <div className="task-form__grid">
@@ -228,11 +313,19 @@ const TasksPage = () => {
 
                             <label>
                                 Due date
-                                <input type="datetime-local" name="dueDate" value={formData.dueDate} onChange={handleFormChange} />
+                                <input
+                                    type="datetime-local"
+                                    name="dueDate"
+                                    value={formData.dueDate}
+                                    onChange={handleFormChange}
+                                />
                             </label>
 
                             <button type="submit" disabled={saving}>
-                                {saving ? "Saving..." : "Create task"}
+                                {saving
+                                    ? (editingTask ? "Updating..." : "Saving...")
+                                    : (editingTask ? "Update Task" : "Create Task")
+                                }
                             </button>
                         </form>
                     </section>
@@ -245,6 +338,9 @@ const TasksPage = () => {
                                     {pagination.totalTasks} total {completedCount ? `- ${completedCount} completed on this page` : ""}
                                 </h2>
                             </div>
+                            <span style={{ color: 'rgba(229, 238, 252, 0.5)', fontSize: '0.9rem' }}>
+                                Showing {tasks.length} of {pagination.totalTasks} tasks
+                            </span>
                         </div>
 
                         {loading ? (
@@ -260,7 +356,11 @@ const TasksPage = () => {
                                                 <h3>{task.title}</h3>
                                                 <p>{task.description || "No description provided."}</p>
                                             </div>
-                                            <button type="button" className={`task-pill task-pill--${task.status} task-pill--button`} onClick={() => handleToggleStatus(task)}>
+                                            <button
+                                                type="button"
+                                                className={`task-pill task-pill--${task.status} task-pill--button`}
+                                                onClick={() => handleToggleStatus(task)}
+                                            >
                                                 {formatTaskStatus(task.status)}
                                                 <span className="task-pill__hint">Click to update</span>
                                             </button>
@@ -273,10 +373,25 @@ const TasksPage = () => {
                                         </div>
 
                                         <div className="task-card__actions">
-                                            <button type="button" className="ghost-button" onClick={() => handleToggleStatus(task)}>
+                                            <button
+                                                type="button"
+                                                className="ghost-button"
+                                                onClick={() => handleStartEdit(task)}
+                                            >
+                                                Edit
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="ghost-button"
+                                                onClick={() => handleToggleStatus(task)}
+                                            >
                                                 Update status
                                             </button>
-                                            <button type="button" className="ghost-button" onClick={() => handleDeleteTask(task._id)}>
+                                            <button
+                                                type="button"
+                                                className="ghost-button"
+                                                onClick={() => handleDeleteTask(task._id)}
+                                            >
                                                 Delete
                                             </button>
                                         </div>
@@ -285,17 +400,54 @@ const TasksPage = () => {
                             </div>
                         )}
 
-                        <div className="task-pagination">
-                            <button type="button" className="ghost-button" onClick={() => fetchTasks(Math.max(1, page - 1))} disabled={loading || page <= 1}>
-                                Previous
-                            </button>
-                            <span>
-                                Page {pagination.page} of {pagination.totalPages || 1}
-                            </span>
-                            <button type="button" className="ghost-button" onClick={() => fetchTasks(Math.min(pagination.totalPages, page + 1))} disabled={loading || page >= pagination.totalPages}>
-                                Next
-                            </button>
-                        </div>
+                        {pagination.totalPages > 1 && (
+                            <div className="task-pagination">
+                                <button
+                                    type="button"
+                                    className="ghost-button"
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    disabled={loading || currentPage <= 1}
+                                >
+                                    Previous
+                                </button>
+
+                                <div className="task-pagination__pages">
+                                    {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                                        let pageNum;
+                                        if (pagination.totalPages <= 5) {
+                                            pageNum = i + 1;
+                                        } else if (currentPage <= 3) {
+                                            pageNum = i + 1;
+                                        } else if (currentPage >= pagination.totalPages - 2) {
+                                            pageNum = pagination.totalPages - 4 + i;
+                                        } else {
+                                            pageNum = currentPage - 2 + i;
+                                        }
+
+                                        return (
+                                            <button
+                                                key={pageNum}
+                                                type="button"
+                                                className={`task-pagination__page ${currentPage === pageNum ? 'task-pagination__page--active' : ''}`}
+                                                onClick={() => handlePageChange(pageNum)}
+                                                disabled={loading}
+                                            >
+                                                {pageNum}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                <button
+                                    type="button"
+                                    className="ghost-button"
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    disabled={loading || currentPage >= pagination.totalPages}
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        )}
                     </section>
                 </div>
             </section>

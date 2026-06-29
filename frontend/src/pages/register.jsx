@@ -50,7 +50,6 @@ const RegisterPage = () => {
 
     return (
         <AuthPageShell
-            eyebrow="Start here"
             title="Create your account"
             subtitle="Register once and reuse the same auth stack across future projects."
             footer={
@@ -86,7 +85,6 @@ const RegisterPage = () => {
 
                 <div className="auth-form__links">
                     <Link to="/login">Already registered?</Link>
-                    <Link to="/forgot-password">Need help signing in?</Link>
                 </div>
             </form>
         </AuthPageShell>
