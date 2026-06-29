@@ -6,7 +6,7 @@ import PasswordResetPage from "./pages/passreset.jsx";
 import DashboardPage from "./pages/dashboard.jsx";
 import TasksPage from "./pages/tasks.jsx";
 import ProfilePage from "./pages/profilePage.jsx";
-import LandingPage from "./pages/LandingPage.jsx";
+import LandingPage from "./pages/landingPage.jsx";
 import ProtectedRoute from "./routes/protectedRoute.jsx";
 import { getStoredToken } from "./utils/helpers.jsx";
 
